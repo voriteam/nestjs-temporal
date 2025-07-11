@@ -170,19 +170,19 @@ export class TemporalExplorer
       const { instance } = wrapper;
       const isRequestScoped = !wrapper.isDependencyTreeStatic();
 
-      this.metadataScanner.scanFromPrototype(
-        instance,
-        Object.getPrototypeOf(instance),
-        (key: string) => {
+      this.metadataScanner
+        .getAllMethodNames(Object.getPrototypeOf(instance))
+        .map((key) => {
           if (this.metadataAccessor.isActivity(instance[key])) {
             if (isRequestScoped) {
-              // TODO: handle request scoped
+              this.logger.warn(
+                `Request-scoped methods are not supported. ${instance.contructor.name}.${key} was NOT registered as an activity!`,
+              );
             } else {
               activitiesMethod[key] = instance[key].bind(instance);
             }
           }
-        },
-      );
+        });
     });
 
     return activitiesMethod;
