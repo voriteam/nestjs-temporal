@@ -140,6 +140,11 @@ export class TemporalExplorer
             if (isRequestScoped) {
               // TODO: handle request scoped
             } else {
+              if(activitiesMethod[key] && this.options.errorOnDuplicateActivities) {
+                // Prevent duplicates from being registered; otherwise, the last method registered will win.
+                throw new Error(`An activity named ${key} has already been registered. ${instance.constructor.name}.${key} cannot be registered.`)
+              }
+
               activitiesMethod[key] = instance[key].bind(instance);
             }
           }

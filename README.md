@@ -225,6 +225,41 @@ export class Worker2Module {
 }
 ``` 
 
+### Prevent conflicting activities
+Activity method names must be unique across _all_ registered actvity classes; otherwise, you may see unexpected 
+results due to the workflow calling an unexpected activity method. Pass the `errorOnDuplicateActivities` option
+to raise an error when duplicates are detected.
+
+```ts
+@Injectable()
+class Greeting1Activity {
+  @Activity()
+  public async doSomething() {}
+}
+
+@Injectable()
+class SomeOtherActivity {
+  @Activity()
+  public async doSomething() {}
+}
+
+@Module({
+  imports: [
+    TemporalModule.registerWorker({
+      workerOptions: {
+        taskQueue: 'worker-1',
+        workflowsPath: require.resolve('./temporal/workflow-1'),
+      },
+      activityClasses: [Greeting1Activity, SomeOtherActivity],
+      errorOnDuplicateActivities: true,
+    }),
+  ],
+  providers: [Greeting1Activity],
+})
+export class Worker1Module {
+}
+```
+
 ## People
 
 - Author - [Zegue kurt](https://github.com/KurtzL)
