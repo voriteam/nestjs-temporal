@@ -10,7 +10,6 @@ export interface TemporalModuleOptions {
   connectionOptions?: NativeConnectionOptions;
   runtimeOptions?: RuntimeOptions;
   activityClasses?: object[];
-  errorOnDuplicateActivities?: boolean;
 }
 
 export const {
