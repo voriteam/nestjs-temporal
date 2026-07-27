@@ -16,7 +16,6 @@ npm-debug.log
 /.nyc_output
 
 # dist
-/dist
 cc-test-reporter
 
 .claude/settings.local.json
