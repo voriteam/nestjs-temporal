@@ -214,4 +214,38 @@ describe('TemporalExplorer', () => {
       expect(activities.activityUsingDependency()).toBe('test-namespace');
     });
   });
+
+  describe('onModuleDestroy', () => {
+    it('waits for an existing shutdown when lifecycle hooks overlap', async () => {
+      const module = await buildModule({ options: {} });
+      const temporalExplorer = module.get(TemporalExplorer);
+      let state = 'RUNNING';
+      let resolveWorkerRun!: () => void;
+      const workerRunPromise = new Promise<void>((resolve) => {
+        resolveWorkerRun = resolve;
+      });
+      const worker = {
+        getState: jest.fn(() => state),
+        shutdown: jest.fn(() => {
+          state = 'STOPPING';
+        }),
+      };
+      Reflect.set(temporalExplorer, 'worker', worker);
+      Reflect.set(temporalExplorer, 'workerRunPromise', workerRunPromise);
+
+      const firstDestroy = temporalExplorer.onModuleDestroy();
+      const secondDestroy = temporalExplorer.onModuleDestroy();
+      let secondDestroyResolved = false;
+      void secondDestroy.then(() => {
+        secondDestroyResolved = true;
+      });
+
+      await Promise.resolve();
+      expect(worker.shutdown).toHaveBeenCalledTimes(1);
+      expect(secondDestroyResolved).toBe(false);
+
+      resolveWorkerRun();
+      await Promise.all([firstDestroy, secondDestroy]);
+    });
+  });
 });
