@@ -43,7 +43,9 @@ let TemporalExplorer = exports.TemporalExplorer = TemporalExplorer_1 = class Tem
                 return;
             }
             try {
-                this.worker.shutdown();
+                if (this.worker.getState() === 'RUNNING') {
+                    this.worker.shutdown();
+                }
                 if (this.workerRunPromise) {
                     yield this.workerRunPromise;
                 }
